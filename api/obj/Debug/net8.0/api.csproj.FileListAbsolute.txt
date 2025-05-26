@@ -130,3 +130,17 @@
 /home/olrug/document-flow/api/bin/Debug/net8.0/zh-Hans/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 /home/olrug/document-flow/api/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 /home/olrug/document-flow/api/bin/Debug/net8.0/runtimes/browser/lib/net8.0/System.Text.Encodings.Web.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/AWSSDK.Core.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/AWSSDK.S3.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/Google.Protobuf.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/Grpc.Core.Api.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/Grpc.Net.Client.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/Grpc.Net.Common.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/Microsoft.Bcl.TimeProvider.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/Yandex.Cloud.Protos.dll
+/home/olrug/document-flow/api/bin/Debug/net8.0/Yandex.Cloud.SDK.dll
