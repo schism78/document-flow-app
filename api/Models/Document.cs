@@ -20,7 +20,7 @@ namespace api.Models
         public DocumentStatus Status { get; set; }
 
         [Required]
-        public int SenderUserId { get; set; } // Кто создал (секретарь)
+        public int SenderUserId { get; set; } // Кто создал 
 
         [ForeignKey("SenderUserId")]
         public User SenderUser { get; set; }
