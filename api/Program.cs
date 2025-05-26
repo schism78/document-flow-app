@@ -23,7 +23,7 @@ builder.Services.AddSingleton<YandexStorageService>();
 builder.Services.AddControllers();
 
 string? serviceUrl = Environment.GetEnvironmentVariable("SERVICE_URL");
-string? accessKey = Environment.GetEnvironmentVariable("ACSESS_KEY");
+string? accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
 string? secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
 
 builder.Services.AddSingleton<IAmazonS3>(sp =>
@@ -38,6 +38,6 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+app.MapControllers();
 
 app.Run();

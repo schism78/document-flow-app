@@ -1,5 +1,6 @@
 using Amazon.S3;
 using Amazon.S3.Model;
+using DotNetEnv;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -10,10 +11,10 @@ namespace YandexCloudStorageApp.Services
         private readonly IAmazonS3 _s3Client;
         private readonly string _bucketName;
 
-        public YandexStorageService(IAmazonS3 s3Client, IConfiguration configuration)
+        public YandexStorageService(IAmazonS3 s3Client)
         {
             _s3Client = s3Client;
-            _bucketName = configuration["YandexObjectStorage:BucketName"];
+            _bucketName = Environment.GetEnvironmentVariable("BUCKET_NAME");
         }
 
         // Загрузка файла

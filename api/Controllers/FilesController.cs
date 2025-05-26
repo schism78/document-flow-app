@@ -39,7 +39,10 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error during file upload: {ex.Message}"); // Логируем исключение
+                Console.WriteLine($"Error during file upload: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                if (ex.InnerException != null)
+                    Console.WriteLine($"Inner: {ex.InnerException.Message}");
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
