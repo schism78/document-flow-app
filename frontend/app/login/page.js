@@ -24,20 +24,20 @@ export default function LoginPage() {
   }, []);
 
   function handleLogin(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    const user = users.find(
-      u => u.login === login && u.passwordHash === password
-    );
+  const user = users.find(
+    u => u.login === login && u.passwordHash === password
+  );
 
-    if (user) {
-      // Можно сохранить в localStorage или context
-      console.log("Успешный вход:", user);
-      router.push("/dashboard");
-    } else {
-      setError("Неверный логин или пароль");
-    }
+  if (user) {
+    localStorage.setItem("currentUser", JSON.stringify(user));
+
+    router.push("/dashboard");
+  } else {
+    setError("Неверный логин или пароль");
   }
+}
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-900">
