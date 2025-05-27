@@ -22,6 +22,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddSingleton<YandexStorageService>();
 builder.Services.AddControllers();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+builder.Services.AddEndpointsApiExplorer();
+
 string? serviceUrl = Environment.GetEnvironmentVariable("SERVICE_URL");
 string? accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
 string? secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
@@ -39,5 +51,5 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 var app = builder.Build();
 
 app.MapControllers();
-
+app.UseCors();
 app.Run();

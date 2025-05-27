@@ -1,49 +1,83 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 export default function DashboardPage() {
-  // Имитация текущего пользователя
-  const currentUser = {
-    id: 5,
-    fullName: "Иван Петров",
-    role: "Директор",
-    department: { name: "Финансовый отдел" },
-  };
+  const [currentUser, setCurrentUser] = useState(null);
+  const [documentsInHand, setDocumentsInHand] = useState([]);
+  const [documentsSent, setDocumentsSent] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Пример данных, позже придёт с API
-  const documentsInHand = [
-    { id: 1, title: "Письмо от МинФина", status: "InProgress" },
-    { id: 2, title: "Смета по проекту", status: "ReturnedForRevision" },
-  ];
+  // Загружаем пользователя из localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem("currentUser");
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+  }, []);
 
-  const documentsSent = [
-    { id: 3, title: "Запрос на закупку", status: "SentToExecutor" },
-    { id: 4, title: "Отчет за квартал", status: "Approved" },
-  ];
+  // Загружаем документы после загрузки пользователя
+  // Опять же, для отправления исключительно нужных документов добавить контроллер!!!!!!!!
+  useEffect(() => {
+    if (!currentUser) return;
+
+    async function fetchDocuments() {
+      try {
+        const res = await fetch("http://localhost:5289/api/documents");
+        if (!res.ok) throw new Error("Ошибка при загрузке документов");
+
+        const data = await res.json();
+
+        // Временно фильтруем по текущему пользователю епт
+        setDocumentsInHand(data.filter(doc => doc.currentUserId === currentUser.id));
+        setDocumentsSent(data.filter(doc => doc.senderUserId === currentUser.id));
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDocuments();
+  }, [currentUser]);
+
+  if (!currentUser) return <p className="p-4">Загрузка пользователя...</p>;
+  if (loading) return <p className="p-4">Загрузка документов...</p>;
+  if (error) return <p className="p-4 text-red-500">Ошибка: {error}</p>;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 text-gray-900">
       <header className="mb-10">
         <h1 className="text-2xl font-bold">Здравствуйте, {currentUser.fullName}!</h1>
         <p className="text-sm text-gray-500">
-          {currentUser.role} / {currentUser.department.name}
+          {currentUser.role} / {currentUser.department?.name || "Без отдела"}
         </p>
       </header>
 
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4">📄 Документы у вас</h2>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-          {documentsInHand.map((doc) => (
-            <DocumentCard key={doc.id} title={doc.title} status={doc.status} />
-          ))}
+          {documentsInHand.length > 0 ? (
+            documentsInHand.map((doc) => (
+              <DocumentCard key={doc.id} title={doc.title} status={doc.status} />
+            ))
+          ) : (
+            <p>У вас нет документов.</p>
+          )}
         </div>
       </section>
 
       <section>
         <h2 className="text-xl font-semibold mb-4">📤 Документы, созданные вами</h2>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-          {documentsSent.map((doc) => (
-            <DocumentCard key={doc.id} title={doc.title} status={doc.status} />
-          ))}
+          {documentsSent.length > 0 ? (
+            documentsSent.map((doc) => (
+              <DocumentCard key={doc.id} title={doc.title} status={doc.status} />
+            ))
+          ) : (
+            <p>Вы не создавали документов.</p>
+          )}
         </div>
       </section>
     </div>
