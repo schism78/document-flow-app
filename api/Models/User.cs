@@ -11,8 +11,15 @@ namespace api.Models
         [Required]
         public string FullName { get; set; } = null!;
 
-        [Required, EmailAddress]
+        [Required]
+        [EmailAddress]
         public string Email { get; set; } = null!;
+
+        [Required]
+        public string Login { get; set; } = null!;  // Логин пользователя (уникальный)
+
+        [Required]
+        public string PasswordHash { get; set; } = null!; // Хэш пароля
 
         [Required]
         public string Role { get; set; } = null!; // Секретарь, Директор, Исполнитель
