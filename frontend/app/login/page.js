@@ -1,16 +1,42 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
+  const [users, setUsers] = useState([]);
+  const [error, setError] = useState("");
+
+  /*
+    ПОЗЖЕ ИЗМЕНИТЬ НА @tanstack-query/react
+    ХЭШ-ПАРОЛЬ НЕ ИСПОЛЬЗУЕТСЯ, БУДЕТ ИСПРАВЛЕНО ПРИ СОЗДАНИИ ПАНЕЛИ АДМИНИСТРАТОРА
+    В ЗАПРОСЕ ПРИХОДЯТ ВСЕ ПОЛЬЗОВАТЕЛИ, ДОБАВИТЬ DTO!!!!
+  */
+
+  useEffect(() => {
+    fetch("http://localhost:5289/api/Users") 
+      .then(res => res.json())
+      .then(data => setUsers(data))
+      .catch(err => console.error("Ошибка загрузки пользователей:", err));
+  }, []);
 
   function handleLogin(e) {
     e.preventDefault();
-    router.push("/dashboard");
+
+    const user = users.find(
+      u => u.login === login && u.passwordHash === password
+    );
+
+    if (user) {
+      // Можно сохранить в localStorage или context
+      console.log("Успешный вход:", user);
+      router.push("/dashboard");
+    } else {
+      setError("Неверный логин или пароль");
+    }
   }
 
   return (
@@ -49,6 +75,10 @@ export default function LoginPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition"
             />
           </div>
+
+          {error && (
+            <p className="text-red-500 text-sm font-medium text-center">{error}</p>
+          )}
 
           <button
             type="submit"
