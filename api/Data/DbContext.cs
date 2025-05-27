@@ -39,6 +39,8 @@ namespace api.Data
                     Id = 1,
                     FullName = "Иван Иванов",
                     Email = "ivanov@company.ru",
+                    Login = "aboba1",
+                    PasswordHash = "123",
                     Role = "Секретарь",
                     DepartmentId = 1
                 },
@@ -47,6 +49,8 @@ namespace api.Data
                     Id = 2,
                     FullName = "Сергей Петров",
                     Email = "petrov@company.ru",
+                    Login = "aboba2",
+                    PasswordHash = "1234",
                     Role = "Директор",
                     DepartmentId = 2
                 },
@@ -55,6 +59,8 @@ namespace api.Data
                     Id = 3,
                     FullName = "Мария Смирнова",
                     Email = "smirnova@company.ru",
+                    Login = "aboba3",
+                    PasswordHash = "12345",
                     Role = "Исполнитель",
                     DepartmentId = 3
                 }
