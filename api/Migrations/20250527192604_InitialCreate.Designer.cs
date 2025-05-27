@@ -12,8 +12,8 @@ using api.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250527095530_AddSeedDataFixed")]
-    partial class AddSeedDataFixed
+    [Migration("20250527192604_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -176,6 +176,14 @@ namespace api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Login")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
@@ -193,6 +201,8 @@ namespace api.Migrations
                             DepartmentId = 1,
                             Email = "ivanov@company.ru",
                             FullName = "Иван Иванов",
+                            Login = "aboba1",
+                            PasswordHash = "123",
                             Role = "Секретарь"
                         },
                         new
@@ -201,6 +211,8 @@ namespace api.Migrations
                             DepartmentId = 2,
                             Email = "petrov@company.ru",
                             FullName = "Сергей Петров",
+                            Login = "aboba2",
+                            PasswordHash = "1234",
                             Role = "Директор"
                         },
                         new
@@ -209,6 +221,8 @@ namespace api.Migrations
                             DepartmentId = 3,
                             Email = "smirnova@company.ru",
                             FullName = "Мария Смирнова",
+                            Login = "aboba3",
+                            PasswordHash = "12345",
                             Role = "Исполнитель"
                         });
                 });

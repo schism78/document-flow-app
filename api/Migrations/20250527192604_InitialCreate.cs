@@ -4,6 +4,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace api.Migrations
 {
     /// <inheritdoc />
@@ -33,6 +35,8 @@ namespace api.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     FullName = table.Column<string>(type: "text", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
+                    Login = table.Column<string>(type: "text", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false),
                     Role = table.Column<string>(type: "text", nullable: false),
                     DepartmentId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -111,6 +115,36 @@ namespace api.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.InsertData(
+                table: "Departments",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    { 1, "Отдел кадров" },
+                    { 2, "Юридический отдел" },
+                    { 3, "Финансовый отдел" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "DepartmentId", "Email", "FullName", "Login", "PasswordHash", "Role" },
+                values: new object[,]
+                {
+                    { 1, 1, "ivanov@company.ru", "Иван Иванов", "aboba1", "123", "Секретарь" },
+                    { 2, 2, "petrov@company.ru", "Сергей Петров", "aboba2", "1234", "Директор" },
+                    { 3, 3, "smirnova@company.ru", "Мария Смирнова", "aboba3", "12345", "Исполнитель" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Documents",
+                columns: new[] { "Id", "CreatedAt", "CurrentUserId", "FileUrl", "SenderUserId", "Status", "Title" },
+                values: new object[] { 1, new DateTime(2024, 1, 15, 0, 0, 0, 0, DateTimeKind.Utc), 2, "https://flow1.storage.yandexcloud.net/documents/text.txt", 1, 1, "Заявление на отпуск" });
+
+            migrationBuilder.InsertData(
+                table: "DocumentRoutes",
+                columns: new[] { "Id", "Action", "Comment", "DocumentId", "FromUserId", "SentAt", "ToUserId" },
+                values: new object[] { 1, 0, "Прошу согласовать отпуск", 1, 1, new DateTime(2024, 1, 16, 0, 0, 0, 0, DateTimeKind.Utc), 2 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_DocumentRoutes_DocumentId",
