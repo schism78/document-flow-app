@@ -42,17 +42,22 @@ namespace api.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Отдел кадров"
+                            Name = "Администрация"
                         },
                         new
                         {
                             Id = 2,
-                            Name = "Юридический отдел"
+                            Name = "Методический отдел"
                         },
                         new
                         {
                             Id = 3,
-                            Name = "Финансовый отдел"
+                            Name = "Отдел комплектования"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Канцелярия"
                         });
                 });
 
@@ -96,12 +101,12 @@ namespace api.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 15, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CurrentUserId = 2,
-                            FileUrl = "https://flow1.storage.yandexcloud.net/documents/text.txt",
+                            CreatedAt = new DateTime(2024, 5, 1, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CurrentUserId = 3,
+                            FileUrl = "https://storage.yandexcloud.net/library-docs/doc1.pdf",
                             SenderUserId = 1,
-                            Status = 1,
-                            Title = "Заявление на отпуск"
+                            Status = 3,
+                            Title = "Запрос отчета по мероприятиям"
                         });
                 });
 
@@ -146,11 +151,21 @@ namespace api.Migrations
                         {
                             Id = 1,
                             Action = 0,
-                            Comment = "Прошу согласовать отпуск",
+                            Comment = "Входящее письмо из департамента культуры",
                             DocumentId = 1,
                             FromUserId = 1,
-                            SentAt = new DateTime(2024, 1, 16, 0, 0, 0, 0, DateTimeKind.Utc),
+                            SentAt = new DateTime(2024, 5, 1, 9, 30, 0, 0, DateTimeKind.Utc),
                             ToUserId = 2
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Action = 0,
+                            Comment = "Подготовьте, пожалуйста, отчет к утру",
+                            DocumentId = 1,
+                            FromUserId = 2,
+                            SentAt = new DateTime(2024, 5, 1, 9, 30, 0, 0, DateTimeKind.Utc),
+                            ToUserId = 3
                         });
                 });
 
@@ -195,31 +210,41 @@ namespace api.Migrations
                         new
                         {
                             Id = 1,
-                            DepartmentId = 1,
-                            Email = "ivanov@company.ru",
-                            FullName = "Иван Иванов",
-                            Login = "aboba1",
-                            PasswordHash = "123",
+                            DepartmentId = 4,
+                            Email = "secretary@library.local",
+                            FullName = "Иванова Светлана Петровна",
+                            Login = "secretary",
+                            PasswordHash = "hashedpassword1",
                             Role = "Секретарь"
                         },
                         new
                         {
                             Id = 2,
-                            DepartmentId = 2,
-                            Email = "petrov@company.ru",
-                            FullName = "Сергей Петров",
-                            Login = "aboba2",
-                            PasswordHash = "1234",
+                            DepartmentId = 1,
+                            Email = "director@library.local",
+                            FullName = "Сидоров Алексей Михайлович",
+                            Login = "director",
+                            PasswordHash = "hashedpassword2",
                             Role = "Директор"
                         },
                         new
                         {
                             Id = 3,
+                            DepartmentId = 2,
+                            Email = "methodist@library.local",
+                            FullName = "Петрова Мария Алексеевна",
+                            Login = "methodist",
+                            PasswordHash = "hashedpassword3",
+                            Role = "Исполнитель"
+                        },
+                        new
+                        {
+                            Id = 4,
                             DepartmentId = 3,
-                            Email = "smirnova@company.ru",
-                            FullName = "Мария Смирнова",
-                            Login = "aboba3",
-                            PasswordHash = "12345",
+                            Email = "supply@library.local",
+                            FullName = "Козлов Дмитрий Сергеевич",
+                            Login = "supply",
+                            PasswordHash = "hashedpassword4",
                             Role = "Исполнитель"
                         });
                 });

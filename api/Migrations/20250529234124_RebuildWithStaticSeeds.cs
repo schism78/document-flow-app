@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class RebuildWithStaticSeeds : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -121,9 +121,10 @@ namespace api.Migrations
                 columns: new[] { "Id", "Name" },
                 values: new object[,]
                 {
-                    { 1, "Отдел кадров" },
-                    { 2, "Юридический отдел" },
-                    { 3, "Финансовый отдел" }
+                    { 1, "Администрация" },
+                    { 2, "Методический отдел" },
+                    { 3, "Отдел комплектования" },
+                    { 4, "Канцелярия" }
                 });
 
             migrationBuilder.InsertData(
@@ -131,20 +132,25 @@ namespace api.Migrations
                 columns: new[] { "Id", "DepartmentId", "Email", "FullName", "Login", "PasswordHash", "Role" },
                 values: new object[,]
                 {
-                    { 1, 1, "ivanov@company.ru", "Иван Иванов", "aboba1", "123", "Секретарь" },
-                    { 2, 2, "petrov@company.ru", "Сергей Петров", "aboba2", "1234", "Директор" },
-                    { 3, 3, "smirnova@company.ru", "Мария Смирнова", "aboba3", "12345", "Исполнитель" }
+                    { 1, 4, "secretary@library.local", "Иванова Светлана Петровна", "secretary", "hashedpassword1", "Секретарь" },
+                    { 2, 1, "director@library.local", "Сидоров Алексей Михайлович", "director", "hashedpassword2", "Директор" },
+                    { 3, 2, "methodist@library.local", "Петрова Мария Алексеевна", "methodist", "hashedpassword3", "Исполнитель" },
+                    { 4, 3, "supply@library.local", "Козлов Дмитрий Сергеевич", "supply", "hashedpassword4", "Исполнитель" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Documents",
                 columns: new[] { "Id", "CreatedAt", "CurrentUserId", "FileUrl", "SenderUserId", "Status", "Title" },
-                values: new object[] { 1, new DateTime(2024, 1, 15, 0, 0, 0, 0, DateTimeKind.Utc), 2, "https://flow1.storage.yandexcloud.net/documents/text.txt", 1, 1, "Заявление на отпуск" });
+                values: new object[] { 1, new DateTime(2024, 5, 1, 9, 0, 0, 0, DateTimeKind.Utc), 3, "https://storage.yandexcloud.net/library-docs/doc1.pdf", 1, 3, "Запрос отчета по мероприятиям" });
 
             migrationBuilder.InsertData(
                 table: "DocumentRoutes",
                 columns: new[] { "Id", "Action", "Comment", "DocumentId", "FromUserId", "SentAt", "ToUserId" },
-                values: new object[] { 1, 0, "Прошу согласовать отпуск", 1, 1, new DateTime(2024, 1, 16, 0, 0, 0, 0, DateTimeKind.Utc), 2 });
+                values: new object[,]
+                {
+                    { 1, 0, "Входящее письмо из департамента культуры", 1, 1, new DateTime(2024, 5, 1, 9, 30, 0, 0, DateTimeKind.Utc), 2 },
+                    { 2, 0, "Подготовьте, пожалуйста, отчет к утру", 1, 2, new DateTime(2024, 5, 1, 9, 30, 0, 0, DateTimeKind.Utc), 3 }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_DocumentRoutes_DocumentId",

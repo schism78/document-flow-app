@@ -78,7 +78,7 @@ namespace api.Data
                     Id = 1,
                     Title = "Запрос отчета по мероприятиям",
                     FileUrl = "https://storage.yandexcloud.net/library-docs/doc1.pdf",
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = new DateTime(2024, 5, 1, 9, 0, 0, DateTimeKind.Utc),
                     Status = DocumentStatus.InProgress,
                     SenderUserId = 1, // секретарь
                     CurrentUserId = 3 // у исполнителя (методист)
@@ -93,7 +93,7 @@ namespace api.Data
                     DocumentId = 1,
                     FromUserId = 1, // Секретарь
                     ToUserId = 2,   // Директор
-                    SentAt = DateTime.UtcNow.AddMinutes(-30),
+                    SentAt = new DateTime(2024, 5, 1, 9, 30, 0, DateTimeKind.Utc),
                     Action = DocumentRouteAction.Forward,
                     Comment = "Входящее письмо из департамента культуры"
                 },
@@ -103,7 +103,7 @@ namespace api.Data
                     DocumentId = 1,
                     FromUserId = 2, // Директор
                     ToUserId = 3,   // Методист
-                    SentAt = DateTime.UtcNow.AddMinutes(-10),
+                    SentAt = new DateTime(2024, 5, 1, 9, 30, 0, DateTimeKind.Utc),
                     Action = DocumentRouteAction.Forward,
                     Comment = "Подготовьте, пожалуйста, отчет к утру"
                 }
