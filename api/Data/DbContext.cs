@@ -19,77 +19,93 @@ namespace api.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Вызов метода сидирования
-            SeedData(modelBuilder);
-        }
-
-        private void SeedData(ModelBuilder modelBuilder)
-        {
+            // Seed Departments
             modelBuilder.Entity<Department>().HasData(
-                new Department { Id = 1, Name = "Отдел кадров" },
-                new Department { Id = 2, Name = "Юридический отдел" },
-                new Department { Id = 3, Name = "Финансовый отдел" }
+                new Department { Id = 1, Name = "Администрация" },
+                new Department { Id = 2, Name = "Методический отдел" },
+                new Department { Id = 3, Name = "Отдел комплектования" },
+                new Department { Id = 4, Name = "Канцелярия" }
             );
-            
-            string ?bucket = Environment.GetEnvironmentVariable("BUCKET_NAME");
 
+            // Seed Users
             modelBuilder.Entity<User>().HasData(
                 new User
                 {
                     Id = 1,
-                    FullName = "Иван Иванов",
-                    Email = "ivanov@company.ru",
-                    Login = "aboba1",
-                    PasswordHash = "123",
+                    FullName = "Иванова Светлана Петровна",
+                    Email = "secretary@library.local",
+                    Login = "secretary",
+                    PasswordHash = "hashedpassword1", // заглушка
                     Role = "Секретарь",
-                    DepartmentId = 1
+                    DepartmentId = 4
                 },
                 new User
                 {
                     Id = 2,
-                    FullName = "Сергей Петров",
-                    Email = "petrov@company.ru",
-                    Login = "aboba2",
-                    PasswordHash = "1234",
+                    FullName = "Сидоров Алексей Михайлович",
+                    Email = "director@library.local",
+                    Login = "director",
+                    PasswordHash = "hashedpassword2",
                     Role = "Директор",
-                    DepartmentId = 2
+                    DepartmentId = 1
                 },
                 new User
                 {
                     Id = 3,
-                    FullName = "Мария Смирнова",
-                    Email = "smirnova@company.ru",
-                    Login = "aboba3",
-                    PasswordHash = "12345",
+                    FullName = "Петрова Мария Алексеевна",
+                    Email = "methodist@library.local",
+                    Login = "methodist",
+                    PasswordHash = "hashedpassword3",
+                    Role = "Исполнитель",
+                    DepartmentId = 2
+                },
+                new User
+                {
+                    Id = 4,
+                    FullName = "Козлов Дмитрий Сергеевич",
+                    Email = "supply@library.local",
+                    Login = "supply",
+                    PasswordHash = "hashedpassword4",
                     Role = "Исполнитель",
                     DepartmentId = 3
                 }
             );
 
+            // Seed Documents
             modelBuilder.Entity<Document>().HasData(
-                
                 new Document
                 {
                     Id = 1,
-                    Title = "Заявление на отпуск",
-                    FileUrl = $"https://{bucket}.storage.yandexcloud.net/documents/text.txt",
-                    CreatedAt = DateTime.SpecifyKind(new DateTime(2024, 1, 15), DateTimeKind.Utc),
-                    Status = DocumentStatus.SentToDirector,
-                    SenderUserId = 1,
-                    CurrentUserId = 2
+                    Title = "Запрос отчета по мероприятиям",
+                    FileUrl = "https://storage.yandexcloud.net/library-docs/doc1.pdf",
+                    CreatedAt = DateTime.UtcNow,
+                    Status = DocumentStatus.InProgress,
+                    SenderUserId = 1, // секретарь
+                    CurrentUserId = 3 // у исполнителя (методист)
                 }
             );
 
+            // Seed DocumentRoutes
             modelBuilder.Entity<DocumentRoute>().HasData(
                 new DocumentRoute
                 {
                     Id = 1,
                     DocumentId = 1,
-                    FromUserId = 1,
-                    ToUserId = 2,
-                    Comment = "Прошу согласовать отпуск",
-                    SentAt = DateTime.SpecifyKind(new DateTime(2024, 1, 16), DateTimeKind.Utc),
-                    Action = DocumentRouteAction.Forward
+                    FromUserId = 1, // Секретарь
+                    ToUserId = 2,   // Директор
+                    SentAt = DateTime.UtcNow.AddMinutes(-30),
+                    Action = DocumentRouteAction.Forward,
+                    Comment = "Входящее письмо из департамента культуры"
+                },
+                new DocumentRoute
+                {
+                    Id = 2,
+                    DocumentId = 1,
+                    FromUserId = 2, // Директор
+                    ToUserId = 3,   // Методист
+                    SentAt = DateTime.UtcNow.AddMinutes(-10),
+                    Action = DocumentRouteAction.Forward,
+                    Comment = "Подготовьте, пожалуйста, отчет к утру"
                 }
             );
         }
