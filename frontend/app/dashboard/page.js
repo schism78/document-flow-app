@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -9,7 +10,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Загружаем пользователя из localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
@@ -17,8 +17,6 @@ export default function DashboardPage() {
     }
   }, []);
 
-  // Загружаем документы после загрузки пользователя
-  // Опять же, для отправления исключительно нужных документов добавить контроллер!!!!!!!!
   useEffect(() => {
     if (!currentUser) return;
 
@@ -29,7 +27,6 @@ export default function DashboardPage() {
 
         const data = await res.json();
 
-        // Временно фильтруем по текущему пользователю епт
         setDocumentsInHand(data.filter(doc => doc.currentUserId === currentUser.id));
         setDocumentsSent(data.filter(doc => doc.senderUserId === currentUser.id));
       } catch (err) {
@@ -60,7 +57,7 @@ export default function DashboardPage() {
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           {documentsInHand.length > 0 ? (
             documentsInHand.map((doc) => (
-              <DocumentCard key={doc.id} title={doc.title} status={doc.status} />
+              <DocumentCard key={doc.id} id={doc.id} title={doc.title} status={doc.status} />
             ))
           ) : (
             <p>У вас нет документов.</p>
@@ -73,7 +70,7 @@ export default function DashboardPage() {
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           {documentsSent.length > 0 ? (
             documentsSent.map((doc) => (
-              <DocumentCard key={doc.id} title={doc.title} status={doc.status} />
+              <DocumentCard key={doc.id} id={doc.id} title={doc.title} status={doc.status} />
             ))
           ) : (
             <p>Вы не создавали документов.</p>
@@ -84,7 +81,7 @@ export default function DashboardPage() {
   );
 }
 
-function DocumentCard({ title, status }) {
+function DocumentCard({ id, title, status }) {
   const statusMap = {
     InProgress: "В работе",
     ReturnedForRevision: "Возвращено",
@@ -93,9 +90,9 @@ function DocumentCard({ title, status }) {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow border border-gray-200 hover:shadow-md transition">
+    <Link href={`/documents?id=${id}`} className="block bg-white p-4 rounded-lg shadow border border-gray-200 hover:shadow-md transition">
       <h3 className="font-medium text-lg mb-2">{title}</h3>
       <p className="text-sm text-gray-500">{statusMap[status] || "Статус неизвестен"}</p>
-    </div>
+    </Link>
   );
 }

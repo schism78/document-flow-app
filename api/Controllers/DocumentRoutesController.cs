@@ -45,6 +45,18 @@ namespace api.Controllers
             return documentRoute;
         }
 
+        [HttpGet("document/{documentId}")]
+        public async Task<ActionResult<IEnumerable<DocumentRoute>>> GetRoutesByDocumentId(int documentId)
+        {
+            var routes = await _context.DocumentRoutes
+                .Include(dr => dr.FromUser)
+                .Include(dr => dr.ToUser)
+                .Where(dr => dr.DocumentId == documentId)
+                .ToListAsync();
+
+            return routes;
+        }
+
         // POST: api/DocumentRoutes
         [HttpPost]
         public async Task<ActionResult<DocumentRoute>> CreateDocumentRoute(DocumentRoute documentRoute)
