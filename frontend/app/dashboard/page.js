@@ -51,47 +51,53 @@ export default function DashboardPage() {
   }, [currentUser]);
 
   async function handleCreateDocument(e) {
-    e.preventDefault();
-    if (!title || !receiverId || files.length === 0) return;
+  e.preventDefault();
+  if (!title || !receiverId || files.length === 0) return;
 
-    try {
-      // Шаг 1. Создать документ
-      const docRes = await fetch("http://localhost:5289/api/documents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          senderUserId: currentUser.id,
-          currentUserId: parseInt(receiverId),
-          status: "SentToExecutor"
-        })
-      });
+  try {
+    const body = {
+      title,
+      senderUserId: currentUser.id,
+      currentUserId: Number(receiverId),
+      status: "SentToExecutor"
+    };
 
-      const createdDoc = await docRes.json();
+    const docRes = await fetch("http://localhost:5289/api/documents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
 
-      // Шаг 2. Загрузить файлы
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("documentId", createdDoc.id);
-
-        await fetch("http://localhost:5289/api/documentfiles/upload", {
-          method: "POST",
-          body: formData
-        });
-      }
-
-      // Сброс и обновление
-      setShowForm(false);
-      setTitle("");
-      setFiles([]);
-      setReceiverId("");
-      window.location.reload();
-
-    } catch (err) {
-      alert("Ошибка при создании документа: " + err.message);
+    if (!docRes.ok) {
+      const errorData = await docRes.json();
+      console.error("Ошибка сервера:", errorData);
+      throw new Error(errorData.detail || errorData.title || "Ошибка при создании документа");
     }
+
+    const createdDoc = await docRes.json();
+
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("documentId", createdDoc.id);
+
+      await fetch("http://localhost:5289/api/documentfiles/upload", {
+        method: "POST",
+        body: formData
+      });
+    }
+
+    setDocumentsSent((prev) => [...prev, createdDoc]);
+
+    setShowForm(false);
+    setTitle("");
+    setFiles([]);
+    setReceiverId("");
+
+  } catch (err) {
+    alert("Ошибка при создании документа: " + err.message);
   }
+}
 
   if (!currentUser) return <p className="p-4">Загрузка пользователя...</p>;
   if (loading) return <p className="p-4">Загрузка документов...</p>;
