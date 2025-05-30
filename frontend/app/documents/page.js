@@ -1,26 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function DocumentDetailsPage() {
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const { id } = useParams(); // получаем id документа из URL
+
+  const id = searchParams.get("id");
+
   const [document, setDocument] = useState(null);
   const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Загрузка документа и маршрутов
   useEffect(() => {
+    if (!id) {
+      setError("Не указан ID документа");
+      setLoading(false);
+      return;
+    }
+
     async function fetchData() {
       try {
         setLoading(true);
 
         const [docRes, routesRes] = await Promise.all([
-          fetch(`http://localhost:5289/api/documents/${id}`),
-          fetch(`http://localhost:5289/api/documentRoutes/document/${id}`)
-        ]);
+  fetch(`http://localhost:5289/api/documents/${id}`),                // запрос к документу
+  fetch(`http://localhost:5289/api/DocumentRoutes/document/${id}`)  // запрос к маршрутам документа
+]);
 
         if (!docRes.ok) throw new Error("Не удалось загрузить документ");
         if (!routesRes.ok) throw new Error("Не удалось загрузить маршруты");
@@ -78,7 +86,8 @@ export default function DocumentDetailsPage() {
         <strong>Отправитель:</strong> {document.senderUser.fullName}
       </p>
       <p className="mb-2">
-        <strong>Текущий держатель:</strong> {document.currentUser ? document.currentUser.fullName : "Нет"}
+        <strong>Текущий держатель:</strong>{" "}
+        {document.currentUser ? document.currentUser.fullName : "Нет"}
       </p>
       <p className="mb-6">
         <strong>Дата создания:</strong>{" "}
