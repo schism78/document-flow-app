@@ -12,8 +12,8 @@ using api.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250529234124_RebuildWithStaticSeeds")]
-    partial class RebuildWithStaticSeeds
+    [Migration("20250530094819_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -78,15 +78,12 @@ namespace api.Migrations
                     b.Property<int?>("CurrentUserId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("FileUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int>("SenderUserId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -106,10 +103,75 @@ namespace api.Migrations
                             Id = 1,
                             CreatedAt = new DateTime(2024, 5, 1, 9, 0, 0, 0, DateTimeKind.Utc),
                             CurrentUserId = 3,
-                            FileUrl = "https://storage.yandexcloud.net/library-docs/doc1.pdf",
                             SenderUserId = 1,
-                            Status = 3,
+                            Status = "InProgress",
                             Title = "Запрос отчета по мероприятиям"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2024, 5, 3, 10, 0, 0, 0, DateTimeKind.Utc),
+                            CurrentUserId = 4,
+                            SenderUserId = 1,
+                            Status = "SentToExecutor",
+                            Title = "Закупка оборудования"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2024, 5, 5, 12, 0, 0, 0, DateTimeKind.Utc),
+                            CurrentUserId = 2,
+                            SenderUserId = 1,
+                            Status = "Approved",
+                            Title = "Распоряжение о внутреннем собрании"
+                        });
+                });
+
+            modelBuilder.Entity("api.Models.DocumentFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DocumentId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId");
+
+                    b.ToTable("DocumentFiles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DocumentId = 1,
+                            FilePath = "https://storage.yandexcloud.net/library-docs/doc1.pdf"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DocumentId = 1,
+                            FilePath = "https://storage.yandexcloud.net/library-docs/doc1-appendix.pdf"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            DocumentId = 2,
+                            FilePath = "https://storage.yandexcloud.net/library-docs/doc2.pdf"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            DocumentId = 3,
+                            FilePath = "https://storage.yandexcloud.net/library-docs/doc3.pdf"
                         });
                 });
 
@@ -167,8 +229,28 @@ namespace api.Migrations
                             Comment = "Подготовьте, пожалуйста, отчет к утру",
                             DocumentId = 1,
                             FromUserId = 2,
-                            SentAt = new DateTime(2024, 5, 1, 9, 30, 0, 0, DateTimeKind.Utc),
+                            SentAt = new DateTime(2024, 5, 1, 10, 0, 0, 0, DateTimeKind.Utc),
                             ToUserId = 3
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Action = 0,
+                            Comment = "Нужна смета на оборудование",
+                            DocumentId = 2,
+                            FromUserId = 1,
+                            SentAt = new DateTime(2024, 5, 3, 10, 30, 0, 0, DateTimeKind.Utc),
+                            ToUserId = 2
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Action = 2,
+                            Comment = "Одобрено директором",
+                            DocumentId = 3,
+                            FromUserId = 1,
+                            SentAt = new DateTime(2024, 5, 5, 12, 30, 0, 0, DateTimeKind.Utc),
+                            ToUserId = 2
                         });
                 });
 
@@ -249,6 +331,16 @@ namespace api.Migrations
                             Login = "supply",
                             PasswordHash = "hashedpassword4",
                             Role = "Исполнитель"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            DepartmentId = 2,
+                            Email = "method2@library.local",
+                            FullName = "Андреева Елена Викторовна",
+                            Login = "method2",
+                            PasswordHash = "hashedpassword5",
+                            Role = "Исполнитель"
                         });
                 });
 
@@ -267,6 +359,17 @@ namespace api.Migrations
                     b.Navigation("CurrentUser");
 
                     b.Navigation("SenderUser");
+                });
+
+            modelBuilder.Entity("api.Models.DocumentFile", b =>
+                {
+                    b.HasOne("api.Models.Document", "Document")
+                        .WithMany("Files")
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Document");
                 });
 
             modelBuilder.Entity("api.Models.DocumentRoute", b =>
@@ -305,6 +408,11 @@ namespace api.Migrations
                         .IsRequired();
 
                     b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("api.Models.Document", b =>
+                {
+                    b.Navigation("Files");
                 });
 #pragma warning restore 612, 618
         }

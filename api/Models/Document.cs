@@ -11,23 +11,20 @@ namespace api.Models
         [Required]
         public string Title { get; set; } = null!;
 
-        [Required]
-        public string FileUrl { get; set; } = null!;
+        public string Status { get; set; } = "InProgress";
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        [Required]
-        public DocumentStatus Status { get; set; }
-
-        [Required]
-        public int SenderUserId { get; set; } // Кто создал 
+        public int SenderUserId { get; set; }
 
         [ForeignKey("SenderUserId")]
         public User SenderUser { get; set; }
 
-        public int? CurrentUserId { get; set; } // Кто сейчас держит документ
+        public int? CurrentUserId { get; set; }
 
         [ForeignKey("CurrentUserId")]
         public User? CurrentUser { get; set; }
+
+        public ICollection<DocumentFile> Files { get; set; } = new List<DocumentFile>();
     }
 }

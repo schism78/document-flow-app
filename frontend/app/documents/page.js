@@ -26,9 +26,9 @@ export default function DocumentDetailsPage() {
         setLoading(true);
 
         const [docRes, routesRes] = await Promise.all([
-  fetch(`http://localhost:5289/api/documents/${id}`),                // запрос к документу
-  fetch(`http://localhost:5289/api/DocumentRoutes/document/${id}`)  // запрос к маршрутам документа
-]);
+          fetch(`http://localhost:5289/api/documents/${id}`),
+          fetch(`http://localhost:5289/api/DocumentRoutes/document/${id}`) 
+        ]);
 
         if (!docRes.ok) throw new Error("Не удалось загрузить документ");
         if (!routesRes.ok) throw new Error("Не удалось загрузить маршруты");

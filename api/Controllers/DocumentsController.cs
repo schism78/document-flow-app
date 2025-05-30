@@ -67,7 +67,6 @@ namespace api.Controllers
                 return NotFound();
 
             existingDoc.Title = updatedDocument.Title;
-            existingDoc.FileUrl = updatedDocument.FileUrl;
             existingDoc.Status = updatedDocument.Status;
             existingDoc.CurrentUserId = updatedDocument.CurrentUserId;
 
