@@ -53,7 +53,7 @@ export default function DashboardPage() {
       </header>
 
       <section className="mb-10">
-        <h2 className="text-xl font-semibold mb-4">📄 Документы у вас</h2>
+        <h2 className="text-xl font-semibold mb-4">📄 Исходящие</h2>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           {documentsInHand.length > 0 ? (
             documentsInHand.map((doc) => (
@@ -66,7 +66,7 @@ export default function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="text-xl font-semibold mb-4">📤 Документы, созданные вами</h2>
+        <h2 className="text-xl font-semibold mb-4">📤 Входящие</h2>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           {documentsSent.length > 0 ? (
             documentsSent.map((doc) => (
