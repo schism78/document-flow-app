@@ -17,34 +17,30 @@
 
         // Загрузка файла
         [HttpPost("upload")]
-        public async Task<IActionResult> UploadFile([FromForm] IFormFile file)
+        public async Task<IActionResult> UploadFiles([FromForm] List<IFormFile> files)
         {
-            Console.WriteLine("UploadFile method called."); // Логируем вызов метода
-
-            if (file == null || file.Length == 0)
+            if (files == null || files.Count == 0)
             {
-                Console.WriteLine("File is null or empty."); // Логируем ошибку
-                return BadRequest("File is empty or not provided.");
+                return BadRequest("No files provided.");
             }
 
-            try
-            {
-                using var stream = file.OpenReadStream();
-                Console.WriteLine($"Uploading file: {file.FileName}, size: {file.Length} bytes"); // Логируем размер и имя файла
+            var uploadedFiles = new List<string>();
 
-                await _storageService.UploadFileAsync(file.FileName, stream);
-
-                Console.WriteLine("File uploaded successfully."); // Логируем успешную загрузку
-                return Ok("File uploaded successfully");
-            }
-            catch (Exception ex)
+            foreach (var file in files)
             {
-                Console.WriteLine($"Error during file upload: {ex.Message}");
-                Console.WriteLine(ex.StackTrace);
-                if (ex.InnerException != null)
-                    Console.WriteLine($"Inner: {ex.InnerException.Message}");
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                try
+                {
+                    using var stream = file.OpenReadStream();
+                    await _storageService.UploadFileAsync(file.FileName, stream);
+                    uploadedFiles.Add(file.FileName);
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, $"Error uploading {file.FileName}: {ex.Message}");
+                }
             }
+
+            return Ok(new { Message = "Files uploaded successfully", Files = uploadedFiles });
         }
 
         // Получение файла
