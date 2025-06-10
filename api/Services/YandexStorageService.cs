@@ -17,6 +17,11 @@ namespace YandexCloudStorageApp.Services
             _bucketName = Environment.GetEnvironmentVariable("BUCKET_NAME");
         }
 
+        public string GetFileUrl(string key)
+        {
+            return $"https://{_bucketName}.storage.yandexcloud.net/{key}";
+        }
+
         // Загрузка файла
         public async Task UploadFileAsync(string key, Stream fileStream)
         {

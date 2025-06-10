@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-
-public class BookStatistic
+namespace api.Models
+{
+    public class BookStatistic
     {
         [Key, ForeignKey("Book")]
         public int BookId { get; set; }
@@ -14,3 +15,4 @@ public class BookStatistic
 
         public double AverageRating { get; set; }
     }
+}

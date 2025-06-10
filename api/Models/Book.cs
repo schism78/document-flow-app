@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class Book
+namespace api.Models
+{
+    public class Book
     {
         [Key]
         public int Id { get; set; }
@@ -17,9 +19,12 @@ public class Book
         [ForeignKey("Genre")]
         public int? GenreId { get; set; }
         public Genre Genre { get; set; }
+        public int TotalCopies { get; set; }      // Общее количество экземпляров книги
+        public int AvailableCopies { get; set; }    // Количество доступных копий
 
         public ICollection<Reservation> Reservations { get; set; }
         public ICollection<BookReview> Reviews { get; set; }
         public ICollection<FileAttachment> FileAttachments { get; set; }
         public BookStatistic Statistic { get; set; }
     }
+}

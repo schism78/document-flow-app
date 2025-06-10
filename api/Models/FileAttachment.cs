@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-
-public class FileAttachment
+namespace api.Models
+{
+    public class FileAttachment
     {
         [Key]
         public int Id { get; set; }
@@ -18,3 +19,4 @@ public class FileAttachment
         public int BookId { get; set; }
         public Book Book { get; set; }
     }
+}

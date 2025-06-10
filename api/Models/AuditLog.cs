@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-
-public class AuditLog
+namespace api.Models
+{
+    public class AuditLog
     {
         [Key]
         public int Id { get; set; }
@@ -19,3 +20,4 @@ public class AuditLog
         public int UserId { get; set; }
         public User User { get; set; }
     }
+}

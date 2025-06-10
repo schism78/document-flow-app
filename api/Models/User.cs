@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class User
+namespace api.Models
+{
+    public class User
     {
         [Key]
         public int Id { get; set; }
@@ -23,3 +25,4 @@ public class User
         public ICollection<BookReview> Reviews { get; set; }
         public ICollection<AuditLog> AuditLogs { get; set; }
     }
+}

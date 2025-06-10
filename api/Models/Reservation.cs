@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class Reservation
+namespace api.Models
+{
+    public class Reservation
     {
         [Key]
         public int Id { get; set; }
@@ -27,3 +29,4 @@ public class Reservation
         [Required, MaxLength(20)]
         public string Status { get; set; } // "Reserved", "Returned", "Overdue"
     }
+}
