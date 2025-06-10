@@ -56,6 +56,10 @@
               "target": "Package",
               "version": "[9.0.4, )"
             },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[8.1.4, )"
+            },
             "Yandex.Cloud.Sdk": {
               "target": "Package",
               "version": "[1.4.1, )"
