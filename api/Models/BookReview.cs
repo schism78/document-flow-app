@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class BookReview
+namespace api.Models
+{
+    public class BookReview
     {
         [Key]
         public int Id { get; set; }
@@ -24,3 +26,4 @@ public class BookReview
         public int BookId { get; set; }
         public Book Book { get; set; }
     }
+}
