@@ -56,16 +56,19 @@ namespace api.Controllers
 
         // POST: api/users/register
         [HttpPost("register")]
-        public async Task<ActionResult<User>> RegisterUser(User user)
+        public async Task<ActionResult<User>> RegisterUser([FromBody] User user)
         {
             if (string.IsNullOrWhiteSpace(user.PasswordHash))
                 return BadRequest("Пароль обязателен");
 
             var exists = await _context.Users.AnyAsync(u =>
-                u.Email == user.Email || u.Username == user.Username);
+                u.Email.ToLower() == user.Email.ToLower() || u.Username.ToLower() == user.Username.ToLower());
 
             if (exists)
                 return BadRequest("Пользователь с таким email или логином уже существует");
+
+            // Хешируем пароль перед сохранением
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
 
             // Установка только роли "User"
             user.Role = "User";
@@ -80,6 +83,48 @@ namespace api.Controllers
                 user.Email,
                 user.Role
             });
+        }
+
+        // DTO для входа
+        // Позже вынести в отдельный файл
+        public class LoginRequest
+        {
+            public string UsernameOrEmail { get; set; }
+            public string Password { get; set; }
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            if (string.IsNullOrEmpty(request.UsernameOrEmail) || string.IsNullOrEmpty(request.Password))
+                return BadRequest(new { message = "Логин/почта и пароль обязательны" });
+
+            // Ищем пользователя по логину или почте
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u =>
+                    u.Username.ToLower() == request.UsernameOrEmail.ToLower() ||
+                    u.Email.ToLower() == request.UsernameOrEmail.ToLower());
+
+            if (user == null)
+                return Unauthorized(new { message = "Пользователь не найден" });
+
+            // Проверка пароля 
+            if (!VerifyPasswordHash(request.Password, user.PasswordHash))
+                return Unauthorized(new { message = "Неверный пароль" });
+
+            return Ok(new
+            {
+                user.Id,
+                user.Username,
+                user.Email,
+                user.Role
+            });
+        }
+
+        // Позже вынести в отдельный файл
+        private bool VerifyPasswordHash(string password, string storedHash)
+        {
+            return BCrypt.Net.BCrypt.Verify(password, storedHash);
         }
 
         // PUT: api/users/5

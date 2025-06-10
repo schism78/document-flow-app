@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "75x4xwr44PaSPklQRV8B7q1QC8Lfag/iG3bHDYBQJU82kX+x8V63wmulxxxuEbe0EKApVWlXI/ExnL++VMZZZg==",
+  "dgSpecHash": "S+GtKfiBSWcLoi5kZPdRRrX3oTC+NLHhy7caRxtgqGKj2QxMn0hKqYxwzX65rWoodYylxkMOsBfPj6t8So0oBw==",
   "success": true,
   "projectFilePath": "/home/olrug/document-flow/api/api.csproj",
   "expectedPackageFiles": [
     "/home/olrug/.nuget/packages/awssdk.core/4.0.0.5/awssdk.core.4.0.0.5.nupkg.sha512",
     "/home/olrug/.nuget/packages/awssdk.s3/4.0.0.7/awssdk.s3.4.0.0.7.nupkg.sha512",
+    "/home/olrug/.nuget/packages/bcrypt.net-next/4.0.3/bcrypt.net-next.4.0.3.nupkg.sha512",
     "/home/olrug/.nuget/packages/dotnetenv/3.1.1/dotnetenv.3.1.1.nupkg.sha512",
     "/home/olrug/.nuget/packages/google.protobuf/3.26.0/google.protobuf.3.26.0.nupkg.sha512",
     "/home/olrug/.nuget/packages/grpc.core.api/2.61.0/grpc.core.api.2.61.0.nupkg.sha512",
