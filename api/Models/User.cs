@@ -1,33 +1,25 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace api.Models
-{
-    public class User
+public class User
     {
         [Key]
         public int Id { get; set; }
 
-        [Required]
-        public string FullName { get; set; } = null!;
+        [Required, MaxLength(100)]
+        public string Username { get; set; }
+
+        [Required, MaxLength(100)]
+        public string Email { get; set; }
 
         [Required]
-        [EmailAddress]
-        public string Email { get; set; } = null!;
+        public string PasswordHash { get; set; }
 
-        [Required]
-        public string Login { get; set; } = null!;  // Логин пользователя (уникальный)
+        // Роль: "User", "Librarian", "Admin"
+        [Required, MaxLength(20)]
+        public string Role { get; set; }
 
-        [Required]
-        public string PasswordHash { get; set; } = null!; // Хэш пароля
-
-        [Required]
-        public string Role { get; set; } = null!; // Секретарь, Директор, Исполнитель
-
-        [Required]
-        public int DepartmentId { get; set; }
-
-        [ForeignKey("DepartmentId")]
-        public Department Department { get; set; }
+        public ICollection<Reservation> Reservations { get; set; }
+        public ICollection<BookReview> Reviews { get; set; }
+        public ICollection<AuditLog> AuditLogs { get; set; }
     }
-}
