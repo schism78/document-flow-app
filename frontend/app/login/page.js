@@ -28,8 +28,9 @@ export default function AuthPage() {
         ? 'http://localhost:5289/api/users/register'
         : 'http://localhost:5289/api/users/login';
 
+      // Отправляем confirmPassword только для проверки на клиенте, на сервер не нужно
       const body = isRegister
-        ? { username, email, password, confirmPassword }
+        ? { username, email, password }
         : { usernameOrEmail, password };
 
       const res = await fetch(url, {
@@ -38,14 +39,15 @@ export default function AuthPage() {
         body: JSON.stringify(body),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
+        // Можно сохранить токен или флаг
         localStorage.setItem('isAuthenticated', 'true');
         router.push('/dashboard');
-      } else if (res.status === 401) {
-        const data = await res.json();
-        setError(data.message || 'Неверный логин или пароль');
       } else {
-        setError('Ошибка сервера');
+        // Если сервер возвращает поле message — показываем его, иначе дефолт
+        setError(data.message || 'Ошибка сервера');
       }
     } catch {
       setError('Ошибка сети');

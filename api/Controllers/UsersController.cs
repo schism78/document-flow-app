@@ -56,22 +56,25 @@ namespace api.Controllers
 
         // POST: api/users/register
         [HttpPost("register")]
-        public async Task<ActionResult<User>> RegisterUser([FromBody] User user)
+        public async Task<IActionResult> RegisterUser([FromBody] RegisterRequest request)
         {
-            if (string.IsNullOrWhiteSpace(user.PasswordHash))
-                return BadRequest("Пароль обязателен");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var exists = await _context.Users.AnyAsync(u =>
-                u.Email.ToLower() == user.Email.ToLower() || u.Username.ToLower() == user.Username.ToLower());
+                u.Email.ToLower() == request.Email.ToLower() ||
+                u.Username.ToLower() == request.Username.ToLower());
 
             if (exists)
-                return BadRequest("Пользователь с таким email или логином уже существует");
+                return BadRequest(new { message = "Пользователь с таким email или логином уже существует" });
 
-            // Хешируем пароль перед сохранением
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
-
-            // Установка только роли "User"
-            user.Role = "User";
+            var user = new User
+            {
+                Username = request.Username,
+                Email = request.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Role = "User"
+            };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -90,6 +93,13 @@ namespace api.Controllers
         public class LoginRequest
         {
             public string UsernameOrEmail { get; set; }
+            public string Password { get; set; }
+        }
+
+        public class RegisterRequest
+        {
+            public string Username { get; set; }
+            public string Email { get; set; }
             public string Password { get; set; }
         }
 
