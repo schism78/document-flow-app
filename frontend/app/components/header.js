@@ -14,7 +14,8 @@ export default function Header() {
   };
 
   const handleProfile = () => {
-   router.push('/profile');
+    // Позже сделать отслеживание по ролям
+   router.push('/user/profile');
   }
 
   return (

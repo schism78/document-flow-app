@@ -45,7 +45,7 @@ export default function AuthPage() {
         // Можно сохранить токен или флаг
         localStorage.setItem('userData', JSON.stringify(data));
         localStorage.setItem('isAuthenticated', 'true');
-        router.push('/profile');
+        router.push('/user/profile');
       } else {
         // Если сервер возвращает поле message — показываем его, иначе дефолт
         setError(data.message || 'Ошибка сервера');
