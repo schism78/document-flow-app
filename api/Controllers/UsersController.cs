@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using api.Data;
 using api.Models;
+using api.Dtos;
 
 namespace api.Controllers
 {
@@ -54,6 +55,33 @@ namespace api.Controllers
             return user;
         }
 
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateUser ([FromBody] CreateUserRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var exists = await _context.Users.AnyAsync(u =>
+                u.Email.ToLower() == request.Email.ToLower() || u.Username.ToLower() == request.Username.ToLower());
+            if (exists)
+                return BadRequest(new { message = "Пользователь с таким email или логином уже существует" });
+            var user = new User
+            {
+                Username = request.Username,
+                Email = request.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Role = request.Role // Устанавливаем роль из запроса
+            };
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetUser ), new { id = user.Id }, new
+            {
+                user.Id,
+                user.Username,
+                user.Email,
+                user.Role
+            });
+        }
+
         // POST: api/users/register
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser([FromBody] RegisterRequest request)
@@ -86,21 +114,6 @@ namespace api.Controllers
                 user.Email,
                 user.Role
             });
-        }
-
-        // DTO для входа
-        // Позже вынести в отдельный файл
-        public class LoginRequest
-        {
-            public string UsernameOrEmail { get; set; }
-            public string Password { get; set; }
-        }
-
-        public class RegisterRequest
-        {
-            public string Username { get; set; }
-            public string Email { get; set; }
-            public string Password { get; set; }
         }
 
         [HttpPost("login")]
