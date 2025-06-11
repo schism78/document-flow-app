@@ -1,95 +1,197 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
+export default function AuthPage() {
   const router = useRouter();
-  const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
-  const [users, setUsers] = useState([]);
-  const [error, setError] = useState("");
 
-  /*
-    ПОЗЖЕ ИЗМЕНИТЬ НА @tanstack-query/react
-    ХЭШ-ПАРОЛЬ НЕ ИСПОЛЬЗУЕТСЯ, БУДЕТ ИСПРАВЛЕНО ПРИ СОЗДАНИИ ПАНЕЛИ АДМИНИСТРАТОРА
-    В ЗАПРОСЕ ПРИХОДЯТ ВСЕ ПОЛЬЗОВАТЕЛИ, ДОБАВИТЬ DTO!!!!
-  */
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isRegister, setIsRegister] = useState(false);
 
-  useEffect(() => {
-    fetch("http://localhost:5289/api/Users") 
-      .then(res => res.json())
-      .then(data => setUsers(data))
-      .catch(err => console.error("Ошибка загрузки пользователей:", err));
-  }, []);
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError('');
 
-  function handleLogin(e) {
-  e.preventDefault();
+    if (isRegister && password !== confirmPassword) {
+      setError('Пароли не совпадают');
+      return;
+    }
 
-  const user = users.find(
-    u => u.login === login && u.passwordHash === password
-  );
+    try {
+      const url = isRegister
+        ? 'http://localhost:5289/api/users/register'
+        : 'http://localhost:5289/api/users/login';
 
-  if (user) {
-    localStorage.setItem("currentUser", JSON.stringify(user));
+      // Отправляем confirmPassword только для проверки на клиенте, на сервер не нужно
+      const body = isRegister
+        ? { username, email, password }
+        : { usernameOrEmail, password };
 
-    router.push("/dashboard");
-  } else {
-    setError("Неверный логин или пароль");
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // Можно сохранить токен или флаг
+        localStorage.setItem('userData', JSON.stringify(data));
+        localStorage.setItem('isAuthenticated', 'true');
+        router.push('/profile');
+      } else {
+        // Если сервер возвращает поле message — показываем его, иначе дефолт
+        setError(data.message || 'Ошибка сервера');
+      }
+    } catch {
+      setError('Ошибка сети');
+    }
   }
-}
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-900">
-      <div className="w-full max-w-sm p-8 bg-white rounded-xl shadow-xl border border-gray-200">
-        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800 tracking-tight">
-          Вход в систему
-        </h1>
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div>
-            <label htmlFor="login" className="block text-sm font-medium text-gray-700 mb-1">
-              Логин
-            </label>
-            <input
-              id="login"
-              type="text"
-              placeholder="examplelogin"
-              value={login}
-              onChange={e => setLogin(e.target.value)}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition"
-            />
-          </div>
+    <div className="min-h-screen bg-white flex items-center justify-center px-6">
+      <div className="max-w-md w-full p-10 border border-gray-300 rounded-xl shadow-lg">
+        <h2 className="text-3xl font-bold text-black mb-8 text-center">
+          {isRegister ? 'Регистрация' : 'Вход'}
+        </h2>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {isRegister ? (
+            <>
+              <div>
+                <label
+                  htmlFor="username"
+                  className="block text-sm font-semibold text-gray-900 mb-2"
+                >
+                  Логин
+                </label>
+                <input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  placeholder="Введите логин"
+                  className="w-full rounded-md border border-gray-400 px-4 py-2 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-semibold text-gray-900 mb-2"
+                >
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="Введите почту"
+                  className="w-full rounded-md border border-gray-400 px-4 py-2 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition"
+                />
+              </div>
+            </>
+          ) : (
+            <div>
+              <label
+                htmlFor="usernameOrEmail"
+                className="block text-sm font-semibold text-gray-900 mb-2"
+              >
+                Логин или Email
+              </label>
+              <input
+                id="usernameOrEmail"
+                type="text"
+                value={usernameOrEmail}
+                onChange={(e) => setUsernameOrEmail(e.target.value)}
+                required
+                placeholder="Введите логин или почту"
+                className="w-full rounded-md border border-gray-400 px-4 py-2 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition"
+              />
+            </div>
+          )}
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
               Пароль
             </label>
             <input
               id="password"
               type="password"
-              placeholder="••••••••"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition"
+              autoComplete={isRegister ? 'new-password' : 'current-password'}
+              placeholder="Введите пароль"
+              className="w-full rounded-md border border-gray-400 px-4 py-2 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition"
             />
           </div>
 
+          {isRegister && (
+            <div>
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-semibold text-gray-900 mb-2"
+              >
+                Подтвердите пароль
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+                placeholder="Повторите пароль"
+                className="w-full rounded-md border border-gray-400 px-4 py-2 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition"
+              />
+            </div>
+          )}
+
           {error && (
-            <p className="text-red-500 text-sm font-medium text-center">{error}</p>
+            <p className="text-red-600 text-center text-sm font-semibold">
+              {error}
+            </p>
           )}
 
           <button
             type="submit"
-            className="w-full py-2 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition"
+            className="w-full py-3 bg-black text-white font-bold rounded-md hover:bg-gray-900 transition"
           >
-            Войти
+            {isRegister ? 'Зарегистрироваться' : 'Войти'}
           </button>
         </form>
 
-        <p className="mt-6 text-xs text-center text-gray-400">
-          © {new Date().getFullYear()} DocumentFlow. Все права защищены.
+        <p className="mt-8 text-center text-gray-700 font-medium text-sm select-none">
+          {isRegister ? 'Уже есть аккаунт?' : 'Нет аккаунта?'}{' '}
+          <button
+            onClick={() => {
+              setIsRegister(!isRegister);
+              setError('');
+              setUsername('');
+              setEmail('');
+              setUsernameOrEmail('');
+              setPassword('');
+              setConfirmPassword('');
+            }}
+            className="underline hover:text-black focus:outline-none transition"
+            type="button"
+          >
+            {isRegister ? 'Войти' : 'Зарегистрироваться'}
+          </button>
         </p>
       </div>
     </div>

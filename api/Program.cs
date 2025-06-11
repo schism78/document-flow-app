@@ -32,7 +32,16 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader();
     });
 });
+
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "My API",
+        Version = "v1"
+    });
+});
 
 string? serviceUrl = Environment.GetEnvironmentVariable("SERVICE_URL");
 string? accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
@@ -42,14 +51,30 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 {
     var s3Config = new AmazonS3Config
     {
-        ServiceURL = serviceUrl, // Указываем URL Yandex Object Storage
-        ForcePathStyle = true    // Требуется для совместимости с Yandex Cloud
+        ServiceURL = serviceUrl,
+        ForcePathStyle = true
     };
     return new AmazonS3Client(accessKey, secretKey, s3Config);
 });
 
 var app = builder.Build();
 
-app.MapControllers();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+        c.RoutePrefix = string.Empty; // Swagger UI будет доступен по http://localhost:<port>/
+    });
+}
+
 app.UseCors();
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
 app.Run();

@@ -46,6 +46,7 @@ namespace api.Controllers
         }
 
         // Загрузить файл с привязкой к книге
+        /*
         [HttpPost]
         public async Task<ActionResult<FileAttachment>> UploadFile([FromForm] IFormFile file, [FromForm] int bookId)
         {
@@ -77,6 +78,10 @@ namespace api.Controllers
 
             return CreatedAtAction(nameof(GetFileAttachment), new { id = fileAttachment.Id }, fileAttachment);
         }
+
+        НЕ РАБОТАЕТ С SWAGGER
+
+        */
 
         // Удалить файл и запись
         [HttpDelete("{id}")]
