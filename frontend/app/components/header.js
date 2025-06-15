@@ -14,7 +14,15 @@ export default function Header() {
   };
 
   const handleProfile = () => {
-   router.push('/profile');
+    const userData = localStorage.getItem('userData');
+    const parsedUser = JSON.parse(userData);
+   if (parsedUser.role === "Librarian") {
+    router.push('/librarian');
+   } else if (parsedUser.role === "User") {
+    router.push('/user/profile');
+   } else if (parsedUser.role === "Admin") {
+    router.push('/admin');
+   } // else для неавторизированного пользователя
   }
 
   return (

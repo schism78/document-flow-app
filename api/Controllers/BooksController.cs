@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using api.Data;
 using api.Models;
+using api.Dtos;
 
 namespace api.Controllers
 {
@@ -45,14 +46,22 @@ namespace api.Controllers
 
         // POST: api/books
         [HttpPost]
-        public async Task<ActionResult<Book>> CreateBook(Book book)
+        public async Task<IActionResult> CreateBook([FromBody] CreateBookRequest request)
         {
-            // Изначально доступно столько же, сколько всего
-            book.AvailableCopies = book.TotalCopies;
-
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            // Создание новой книги
+            var book = new Book
+            {
+                Title = request.Title,
+                Author = request.Author,
+                Annotation = request.Annotation,
+                GenreId = request.GenreId,
+                TotalCopies = request.TotalCopies,
+                AvailableCopies = request.TotalCopies // Устанавливаем доступные копии равными общему количеству
+            };
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
-
             return CreatedAtAction(nameof(GetBook), new { id = book.Id }, book);
         }
 

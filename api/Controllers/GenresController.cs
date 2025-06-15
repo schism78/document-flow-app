@@ -4,6 +4,7 @@ using api.Data;
 using api.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using api.Dtos;
 
 namespace api.Controllers
 {
@@ -38,15 +39,22 @@ namespace api.Controllers
         }
 
         // POST: api/Genres
-        [HttpPost]
-        public async Task<ActionResult<Genre>> CreateGenre([FromBody] Genre genre)
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateGenre([FromBody] CreateGenreRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
+            // Проверка на дубликаты
+            var exists = await _context.Genres.AnyAsync(g => g.Name.ToLower() == request.Name.ToLower());
+            if (exists)
+                return BadRequest(new { message = "Жанр с таким именем уже существует" });
+            var genre = new Genre
+            {
+                Name = request.Name,
+                Books = new List<Book>() // Инициализация пустым списком книг, если необходимо
+            };
             _context.Genres.Add(genre);
             await _context.SaveChangesAsync();
-
             return CreatedAtAction(nameof(GetGenre), new { id = genre.Id }, genre);
         }
 
