@@ -40,15 +40,16 @@ export default function AuthPage() {
       });
 
       const data = await res.json();
+      localStorage.setItem('userData', JSON.stringify(data));
+      const role = data.role;
 
-      if (res.ok) {
-        // Можно сохранить токен или флаг
-        localStorage.setItem('userData', JSON.stringify(data));
-        localStorage.setItem('isAuthenticated', 'true');
-        router.push('/user/profile');
+      // Редирект в зависимости от роли
+      if (role === 'Admin') {
+        router.push('/admin');
+      } else if (role === 'Librarian') {
+        router.push('/librarian');
       } else {
-        // Если сервер возвращает поле message — показываем его, иначе дефолт
-        setError(data.message || 'Ошибка сервера');
+        router.push('/user/profile'); // для обычных пользователей
       }
     } catch {
       setError('Ошибка сети');

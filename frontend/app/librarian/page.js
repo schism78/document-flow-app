@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '../../components/header';
+import Header from '../components/header';
 
 export default function LibrarianPage() {
   const router = useRouter();
