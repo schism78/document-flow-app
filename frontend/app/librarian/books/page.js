@@ -18,6 +18,22 @@ export default function LibrarianPage() {
     const [error, setError] = useState('');
     const [newGenre, setNewGenre] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const booksPerPage = 5;
+
+    const filteredBooks = books.filter((book) => {
+        const lowerQuery = searchQuery.toLowerCase();
+        return (
+            book.title?.toLowerCase().includes(lowerQuery) ||
+            book.author?.toLowerCase().includes(lowerQuery)
+        );
+    });
+
+    const indexOfLastBook = currentPage * booksPerPage;
+    const indexOfFirstBook = indexOfLastBook - booksPerPage;
+    const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
+    const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
 
     useEffect(() => {
         async function fetchBooks() {
@@ -188,18 +204,6 @@ export default function LibrarianPage() {
                                     className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
                                 />
                             </div>
-                            <div>
-                                <label htmlFor="availableCopies" className="block text-sm font-semibold text-gray-900 mb-1">Количество доступных копий</label>
-                                <input
-                                    id="availableCopies"
-                                    type="number"
-                                    value={availableCopies}
-                                    onChange={(e) => setAvailableCopies(e.target.value)}
-                                    min="1"
-                                    required
-                                    className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
-                                />
-                            </div>
                             <button
                                 type="submit"
                                 className="w-full py-3 bg-black text-white font-bold rounded-md hover:bg-gray-900 transition"
@@ -233,20 +237,33 @@ export default function LibrarianPage() {
                         </form>
                     </div>
                 </div>
-
+                
+                
                 {/* Секция списка книг */}
                 <div className="mt-10">
                     <h2 className="text-2xl font-bold mb-4">Список книг</h2>
+
+                    {/* Поиск */}
+                    <div className="mt-4 mb-4">
+                        <input
+                            type="text"
+                            placeholder="Поиск по названию или автору"
+                            value={searchQuery}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
+                        />
+                    </div>
+
                     <div className="bg-white shadow-md rounded-lg p-6">
-                        {books.length === 0 ? (
-                            <p className="text-gray-600">Нет добавленных книг.</p>
+                        {filteredBooks.length === 0 ? (
+                            <p className="text-gray-600">Нет подходящих книг.</p>
                         ) : (
                             <div className="space-y-4">
-                                {books.map((book) => {
-                                    // Проверка на пустые поля
+                                {currentBooks.map((book) => {
                                     const isEmptyBook = !book.title && !book.author && !book.genre && !book.annotation;
-
-                                    // Если все поля пустые, не рендерим этот элемент
                                     if (isEmptyBook) return null;
 
                                     return (
@@ -271,6 +288,25 @@ export default function LibrarianPage() {
                                         </div>
                                     );
                                 })}
+                            </div>
+                        )}
+
+                        {/* Пагинация */}
+                        {totalPages > 1 && (
+                            <div className="flex justify-center gap-2 mt-6">
+                                {Array.from({ length: totalPages }, (_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setCurrentPage(i + 1)}
+                                        className={`px-4 py-2 rounded-md border ${
+                                            currentPage === i + 1
+                                                ? 'bg-black text-white'
+                                                : 'bg-gray-100 hover:bg-gray-200'
+                                        }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
                             </div>
                         )}
                     </div>
