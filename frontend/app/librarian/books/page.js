@@ -17,19 +17,21 @@ export default function LibrarianPage() {
     const [books, setBooks] = useState([]);
     const [error, setError] = useState('');
     const [newGenre, setNewGenre] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
-        // Загрузка книг при монтировании компонента
         async function fetchBooks() {
             const res = await fetch('http://localhost:5289/api/books');
             const data = await res.json();
-            setBooks(data);
+            setBooks(data.$values); 
         }
+
         async function fetchGenres() {
-            const res = await fetch ('http://localhost:5289/api/genres');
+            const res = await fetch('http://localhost:5289/api/genres');
             const data = await res.json();
-            setGenres(data);
+            setGenres(data.$values); 
         }
+
         fetchBooks();
         fetchGenres();
     }, []);
@@ -48,7 +50,7 @@ export default function LibrarianPage() {
                     annotation,
                     genreId: genreId ? parseInt(genreId) : null,
                     totalCopies,
-                    availableCopies,
+                    availableCopies: totalCopies,
                 }),
             });
 
@@ -56,8 +58,11 @@ export default function LibrarianPage() {
                 throw new Error('Ошибка при добавлении книги');
             }
 
-            // Обновление списка книг
             const newBook = await res.json();
+
+            setSuccessMessage('Книга успешно добавлена!');
+            setTimeout(() => setSuccessMessage(''), 3000);
+
             setBooks([...books, newBook]);
 
             // Очистка формы после успешного добавления
@@ -72,40 +77,53 @@ export default function LibrarianPage() {
         }
     }
 
-       async function handleAddGenre(e) {
-            e.preventDefault();
-            setError('');
+    async function handleAddGenre(e) {
+        e.preventDefault();
+        setError('');
 
-            if (newGenre.trim() === '') {
-                setError('Название жанра не может быть пустым.');
-                return;
-            }
-
-            try {
-                const res = await fetch('http://localhost:5289/api/genres/create', { 
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: newGenre }),
-                });
-
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    throw new Error(errorData.message || 'Ошибка при добавлении жанра');
-                }
-
-                const newGenreData = await res.json();
-                setGenres([...genres, newGenreData]);
-                setNewGenre('');
-            } catch (error) {
-                setError(error.message);
-            }
+        if (newGenre.trim() === '') {
+            setError('Название жанра не может быть пустым.');
+            return;
         }
+
+        try {
+            const res = await fetch('http://localhost:5289/api/Genres/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newGenre }),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || 'Ошибка при добавлении жанра');
+            }
+
+            const newGenreData = await res.json();
+
+            setSuccessMessage('Жанр успешно добавлен в список!');
+            setTimeout(() => setSuccessMessage(''), 3000);
+
+            setGenres([...genres, newGenreData]);
+            setNewGenre('');
+        } catch (error) {
+            setError(error.message);
+        }
+    }
 
     return (
         <div>
             <Header />
             <div className="min-h-screen bg-gray-100 p-6">
                 <h1 className="text-4xl font-bold text-center mb-8">Управление библиотекой</h1>
+                {successMessage && (
+                    <div className="fixed bottom-6 left-6 z-50 w-fit max-w-sm flex items-start gap-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-4 rounded-xl shadow-2xl animate-fade-in-out backdrop-blur-sm">
+                        <div className="text-2xl">✅</div>
+                        <div className="flex flex-col">
+                            <span className="font-semibold text-md">Успешно!</span>
+                            <span className="text-sm">{successMessage}</span>
+                        </div>
+                    </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Секция добавления книги */}
                     <div className="bg-white shadow-md rounded-lg p-6">
@@ -151,7 +169,7 @@ export default function LibrarianPage() {
                                     className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
                                 >
                                     <option value="">Выберите жанр</option>
-                                    {genres.map((genre) => (
+                                    {Array.isArray(genres) && genres.map((genre) => (
                                         <option key={genre.id} value={genre.id}>
                                             {genre.name}
                                         </option>
@@ -223,18 +241,37 @@ export default function LibrarianPage() {
                         {books.length === 0 ? (
                             <p className="text-gray-600">Нет добавленных книг.</p>
                         ) : (
-                            <ul className="space-y-4">
-                                {books.map((book) => (
-                                    <li key={book.id} className="border-b border-gray-300 pb-2">
-                                        <h3 className="font-semibold">{book.title}</h3>
-                                        <p className="text-gray-600">Автор: {book.author}</p>
-                                        <p className="text-gray-600">Жанр: {book.genre.name}</p>
-                                        <p className="text-gray-600">Аннотация: {book.annotation}</p>
-                                        <p className="text-gray-600">Общее количество: {book.totalCopies}</p>
-                                        <p className="text-gray-600">Доступные копии: {book.availableCopies}</p>
-                                    </li>
-                                ))}
-                            </ul>
+                            <div className="space-y-4">
+                                {books.map((book) => {
+                                    // Проверка на пустые поля
+                                    const isEmptyBook = !book.title && !book.author && !book.genre && !book.annotation;
+
+                                    // Если все поля пустые, не рендерим этот элемент
+                                    if (isEmptyBook) return null;
+
+                                    return (
+                                        <div key={book.id} className="border-b border-gray-300 pb-4">
+                                            <div className="flex flex-col">
+                                                <h3 className="font-semibold text-lg">{book.title || 'Без названия'}</h3>
+                                                <p className="text-gray-600">Автор: {book.author || 'Не указан'}</p>
+                                                <p className="text-gray-600">Жанр: {book.genre ? book.genre.name : 'Не указан'}</p>
+                                                <p className="text-gray-600">Аннотация: {book.annotation || 'Нет аннотации'}</p>
+                                            </div>
+                                            <div className="mt-2">
+                                                <div className="bg-gray-200 h-2 rounded">
+                                                    <div
+                                                        className="bg-blue-500 h-full rounded"
+                                                        style={{ width: `${(book.availableCopies / book.totalCopies) * 100}%` }}
+                                                    />
+                                                </div>
+                                                <p className="text-gray-600 text-sm mt-1">
+                                                    Доступные копии: {book.availableCopies} из {book.totalCopies}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         )}
                     </div>
                 </div>
