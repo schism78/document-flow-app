@@ -13,12 +13,7 @@ export default function LibrarianPage() {
     const [genreId, setGenreId] = useState('');
     const [totalCopies, setTotalCopies] = useState(1);
     const [availableCopies, setAvailableCopies] = useState(1);
-    const [genres, setGenres] = useState([
-        { id: 1, name: 'Фантастика' },
-        { id: 2, name: 'Детектив' },
-        { id: 3, name: 'Роман' },
-        { id: 4, name: 'Научная литература' },
-    ]);
+    const [genres, setGenres] = useState([]);
     const [books, setBooks] = useState([]);
     const [error, setError] = useState('');
     const [newGenre, setNewGenre] = useState('');
@@ -30,7 +25,13 @@ export default function LibrarianPage() {
             const data = await res.json();
             setBooks(data);
         }
+        async function fetchGenres() {
+            const res = await fetch ('http://localhost:5289/api/genres');
+            const data = await res.json();
+            setGenres(data);
+        }
         fetchBooks();
+        fetchGenres();
     }, []);
 
     async function handleAddBook(e) {
@@ -71,29 +72,34 @@ export default function LibrarianPage() {
         }
     }
 
-    async function handleAddGenre(e) {
-        e.preventDefault();
-        setError('');
+       async function handleAddGenre(e) {
+            e.preventDefault();
+            setError('');
 
-        try {
-            const res = await fetch('http://localhost:5289/api/genres', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: newGenre }),
-            });
-
-            if (!res.ok) {
-                throw new Error('Ошибка при добавлении жанра');
+            if (newGenre.trim() === '') {
+                setError('Название жанра не может быть пустым.');
+                return;
             }
 
-            // Обновление списка жанров
-            const updatedGenres = await res.json();
-            setGenres([...genres, updatedGenres]);
-            setNewGenre('');
-        } catch (error) {
-            setError(error.message);
+            try {
+                const res = await fetch('http://localhost:5289/api/genres/create', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newGenre }),
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.message || 'Ошибка при добавлении жанра');
+                }
+
+                const newGenreData = await res.json();
+                setGenres([...genres, newGenreData]);
+                setNewGenre('');
+            } catch (error) {
+                setError(error.message);
+            }
         }
-    }
 
     return (
         <div>
