@@ -4,25 +4,26 @@ import { useState, useEffect } from 'react';
 import Header from '../components/header';
 import Link from 'next/link';
 
-const mockBooks = [
-  { id: 1, title: '1984', author: 'Джордж Оруэлл', genre: 'Фантастика' },
-  { id: 2, title: 'Мастер и Маргарита', author: 'Михаил Булгаков', genre: 'Роман' },
-  { id: 3, title: 'Война и мир', author: 'Лев Толстой', genre: 'Исторический роман' },
-  // Добавьте больше книг по мере необходимости
-];
-
 export default function BookCatalog() {
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    // Здесь можно заменить mockBooks на реальный API-запрос
-    setBooks(mockBooks);
+    const fetchBooks = async () => {
+      const response = await fetch('http://localhost:5289/api/books');
+      const data = await response.json();
+      console.log(data); // Проверьте структуру данных
+      setBooks(data.$values || []); // Убедитесь, что устанавливаете массив
+    };
+
+    fetchBooks();
   }, []);
 
   const filteredBooks = books.filter(book =>
-    book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    book.author.toLowerCase().includes(searchTerm.toLowerCase())
+    book.title && book.author && (
+      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      book.author.toLowerCase().includes(searchTerm.toLowerCase())
+    )
   );
 
   return (
@@ -50,7 +51,7 @@ export default function BookCatalog() {
               <div key={book.id} className="border rounded-lg p-4 shadow-md">
                 <h2 className="text-xl font-semibold">{book.title}</h2>
                 <p className="text-gray-600">Автор: {book.author}</p>
-                <p className="text-gray-500">Жанр: {book.genre}</p>
+                <p className="text-gray-500">Жанр: {book.genre?.name}</p>
                 <Link href={`/book/${book.id}`} className="mt-4 inline-block text-blue-500 hover:underline">
                   Подробнее
                 </Link>
