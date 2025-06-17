@@ -4,20 +4,32 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Header from '../../components/header';
+import ReservationModal from '../../components/reservation';
 
 export default function BookPage() {
   const pathname = usePathname();
   const id = pathname.split('/').pop();
-
+  
+  const [user, setUser ] = useState(null);
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Заглушка похожих книг (для заполнения свободного места)
   const [relatedBooks, setRelatedBooks] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userReservation, setUserReservation] = useState(null);
 
   useEffect(() => {
-    if (!id) return;
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      setUser (JSON.parse(userData));
+    } else {
+      router.push('/auth');
+    }
+  }, []); // Only run once on mount
+
+  useEffect(() => {
+    if (!user || !id) return;
+
     const fetchBook = async () => {
       setLoading(true);
       try {
@@ -32,24 +44,64 @@ export default function BookPage() {
       }
     };
 
-    const fetchRelatedBooks = async () => {
-      // Позже реализовать логику рекомендации книг
-      try {
-        const response = await fetch('http://localhost:5289/api/books');
-        if (!response.ok) throw new Error('Ошибка загрузки похожих книг');
+    const fetchUserReservation = async () => {
+    try {
+        const response = await fetch(`http://localhost:5289/api/reservations/filter?userId=${user.id}&bookId=${id}`);
+        if (!response.ok) throw new Error('Ошибка загрузки бронирования пользователя');
         const data = await response.json();
-        const booksArr = data.$values || [];
-        // Отфильтровать текущую книгу и взять до 3х
-        const related = booksArr.filter(b => b.id !== Number(id)).slice(0, 3);
-        setRelatedBooks(related);
-      } catch {
-        setRelatedBooks([]);
-      }
-    };
+        
+        // Извлекаем данные о бронировании
+        const reservations = data.$values; // Получаем массив бронирований
+        setUserReservation(Array.isArray(reservations) && reservations.length > 0 ? reservations[0] : null);
+    } catch (err) {
+        console.error(err);
+        setUserReservation(null);
+    }
+};
 
     fetchBook();
-    fetchRelatedBooks();
-  }, [id]);
+    fetchUserReservation(); // Запрашиваем информацию о бронировании
+  }, [user, id]); // Only run when user or id changes
+
+  const handleReserve = async (reservationData) => {
+    if (userReservation) {
+      alert('Вы уже забронировали эту книгу.');
+      return; // Не разрешаем повторное бронирование
+    }
+
+    try {
+      const response = await fetch('http://localhost:5289/api/reservations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bookId: reservationData.bookId,
+          userId: user.id, 
+          returnBy: reservationData.returnBy,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.title || 'Ошибка при бронировании книги');
+      }
+
+      const data = await response.json();
+      alert('Книга успешно забронирована!');
+      
+      // Обновляем состояние книги
+      setBook((prevBook) => ({
+        ...prevBook,
+        availableCopies: prevBook.availableCopies - 1,
+      }));
+
+      // Обновляем состояние бронирования пользователя
+      setUserReservation(data); // Обновляем состояние с новым бронированием
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
   if (loading) {
     return (
@@ -95,13 +147,11 @@ export default function BookPage() {
       <Header />
 
       <main className="max-w-screen-xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* Основной блок книги - занимает 2 колонки */}
         <section className="lg:col-span-2 space-y-8">
           <h1 className="text-5xl font-extrabold">{book.title}</h1>
           <p className="text-lg text-gray-600 font-semibold">Автор: {book.author}</p>
           <p className="text-gray-500 italic">{book.genre?.name || 'Жанр не указан'}</p>
 
-          {/* Аннотация */}
           {book.annotation ? (
             <section>
               <h2 className="text-2xl font-bold mb-2 border-b border-gray-300 pb-1">Аннотация</h2>
@@ -111,7 +161,6 @@ export default function BookPage() {
             <p className="text-gray-400 italic">Описание отсутствует.</p>
           )}
 
-          {/* Статистика */}
           <section className="flex gap-12 mt-8">
             <div>
               <h3 className="text-xl font-semibold">Всего копий</h3>
@@ -123,20 +172,22 @@ export default function BookPage() {
             </div>
           </section>
 
-          {/* Кнопка бронирования (если доступно) */}
-          {book.availableCopies > 0 ? (
-            <button
-              type="button"
-              className="mt-8 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg text-white font-semibold transition"
-              onClick={() => alert('Функция бронирования пока не реализована')}
-            >
-              Забронировать книгу
-            </button>
+          {userReservation ? (
+              <p className="mt-8 text-yellow-600 font-semibold">
+                  Вы уже забронировали эту книгу. Статус: <strong>{userReservation.status}</strong>.
+              </p>
+          ) : book.availableCopies > 0 ? (
+              <button
+                  type="button"
+                  className="mt-8 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg text-white font-semibold transition"
+                  onClick={() => setIsModalOpen(true)} // Открыть модальное окно
+              >
+                  Забронировать книгу
+              </button>
           ) : (
-            <p className="mt-8 text-red-600 font-semibold">Все копии книги заняты.</p>
+              <p className="mt-8 text-red-600 font-semibold">Все копии книги заняты.</p>
           )}
 
-          {/* Отзывы */}
           <section className="mt-12">
             <h2 className="text-2xl font-bold mb-6">Отзывы</h2>
             {book.reviews && book.reviews.length > 0 ? (
@@ -154,27 +205,29 @@ export default function BookPage() {
           </section>
         </section>
 
-        {/* Боковая панель с похожими книгами */}
         <aside className="space-y-8">
             <h3 className="text-3xl font-semibold border-b pb-3 mb-6">Похожие книги</h3>
-            {relatedBooks.length > 0 ? (
-                relatedBooks.map(rb => (
-                <div key={rb.id} className="border rounded-lg p-4 shadow hover:shadow-lg transition cursor-pointer">
-                    <h4 className="font-semibold text-lg">{rb.title}</h4>
-                    <p className="text-gray-600 text-sm mb-1">Автор: {rb.author}</p>
-                    <p className="text-gray-500 text-sm">Жанр: {rb.genre?.name || '–'}</p>
-                    <Link href={`/book/${rb.id}`} className="text-blue-500 hover:underline text-sm">
-                    Подробнее
-                    </Link>
-                </div>
-                ))
-            ) : (
-                <p className="text-gray-500 italic">Похожие книги недоступны.</p>
-            )}
+            {relatedBooks.map((rb, index) => (
+            <div key={index} className="border rounded-lg p-4 shadow hover:shadow-lg transition cursor-pointer">
+                <h4 className="font-semibold text-lg">{rb.title}</h4>
+                <p className="text-gray-600 text-sm mb-1">Автор: {rb.author}</p>
+                <p className="text-gray-500 text-sm">Жанр: {rb.genre?.name || '–'}</p>
+                <Link href={`/book/${rb.id}`} className="text-blue-500 hover:underline text-sm">
+                Подробнее
+                </Link>
+            </div>
+            ))}
         </aside>
 
       </main>
+
+      {/* Модальное окно для бронирования */}
+      <ReservationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        bookId={book.id}
+        onReserve={handleReserve}
+      />
     </div>
   );
 }
-

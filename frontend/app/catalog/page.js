@@ -12,8 +12,7 @@ export default function BookCatalog() {
     const fetchBooks = async () => {
       const response = await fetch('http://localhost:5289/api/books');
       const data = await response.json();
-      console.log(data); // Проверьте структуру данных
-      setBooks(data.$values || []); // Убедитесь, что устанавливаете массив
+      setBooks(data.$values || []); 
     };
 
     fetchBooks();
