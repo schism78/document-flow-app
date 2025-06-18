@@ -11,12 +11,13 @@ export default function BookPage() {
   const id = pathname.split('/').pop();
   
   const [user, setUser ] = useState(null);
-  const [book, setBook] = useState(null);
+  const [book, setBook] = useState({ reviews: [] }); // Инициализация с пустым массивом для reviews
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [relatedBooks, setRelatedBooks] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userReservation, setUserReservation] = useState(null);
+  const [newReview, setNewReview] = useState({ text: '', rating: 1 });
 
   useEffect(() => {
     const userData = localStorage.getItem('userData');
@@ -36,7 +37,18 @@ export default function BookPage() {
         const response = await fetch(`http://localhost:5289/api/books/${id}`);
         if (!response.ok) throw new Error('Ошибка загрузки книги');
         const data = await response.json();
-        setBook(data);
+
+        // Извлекаем массив отзывов из объекта
+        const reviews = data.reviews?.$values || [];
+
+        // Устанавливаем состояние книги с извлеченными отзывами
+        setBook({
+          ...data,
+          reviews: reviews.map(review => ({
+            ...review,
+            user: review.user || { name: 'Аноним' } // Убедитесь, что user всегда существует
+          })),
+        });
       } catch (err) {
         setError(err.message);
       } finally {
@@ -45,23 +57,24 @@ export default function BookPage() {
     };
 
     const fetchUserReservation = async () => {
-    try {
+      try {
         const response = await fetch(`http://localhost:5289/api/reservations/filter?userId=${user.id}&bookId=${id}`);
         if (!response.ok) throw new Error('Ошибка загрузки бронирования пользователя');
         const data = await response.json();
-        
-        // Извлекаем данные о бронировании
-        const reservations = data.$values; // Получаем массив бронирований
-        setUserReservation(Array.isArray(reservations) && reservations.length > 0 ? reservations[0] : null);
-    } catch (err) {
+        setUserReservation(Array.isArray(data.$values) && data.$values.length > 0 ? data.$values[0] : null);
+      } catch (err) {
         console.error(err);
         setUserReservation(null);
-    }
-};
+      }
+    };
 
     fetchBook();
-    fetchUserReservation(); // Запрашиваем информацию о бронировании
-  }, [user, id]); // Only run when user or id changes
+    fetchUserReservation(); 
+  }, [user, id]); 
+
+   const hasUserReview = book.reviews.some(
+        (review) => review.user?.id === user.id
+        );
 
   const handleReserve = async (reservationData) => {
     if (userReservation) {
@@ -91,10 +104,10 @@ export default function BookPage() {
       alert('Книга успешно забронирована!');
       
       // Обновляем состояние книги
-      setBook((prevBook) => ({
+     setBook((prevBook) => ({
         ...prevBook,
-        availableCopies: prevBook.availableCopies - 1,
-      }));
+        reviews: [...prevBook.reviews, { ...savedReview, user: { username: user.username } }],
+     }));
 
       // Обновляем состояние бронирования пользователя
       setUserReservation(data); // Обновляем состояние с новым бронированием
@@ -102,6 +115,49 @@ export default function BookPage() {
       alert(error.message);
     }
   };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:5289/api/bookreviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: newReview.text,
+          rating: newReview.rating,
+          userId: user.id,
+          bookId: book.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.title || 'Ошибка при добавлении отзыва');
+      }
+
+      const savedReview = await response.json();
+        alert('Отзыв успешно добавлен!');
+
+        // сохраняем текущий текст и рейтинг
+        const currentText = newReview.text;
+        const currentRating = newReview.rating;
+
+        setBook((prevBook) => ({
+        ...prevBook,
+        reviews: [
+            ...prevBook.reviews,
+            { ...savedReview, text: currentText, rating: currentRating, user: { username: user.username } },
+        ],
+        }));
+
+        setNewReview({ text: '', rating: 1 });
+
+            } catch (error) {
+            alert(error.message);
+            }
+        };
 
   if (loading) {
     return (
@@ -195,7 +251,9 @@ export default function BookPage() {
                 {book.reviews.map((review, idx) => (
                   <div key={idx} className="border p-4 rounded-md shadow-sm bg-gray-50">
                     <p className="text-gray-800 italic">"{review.text || 'Без текста отзыва'}"</p>
-                    <p className="mt-2 text-sm font-semibold text-gray-700">— {review.authorName || 'Аноним'}</p>
+                    <p className="mt-2 text-sm font-semibold text-gray-700">
+                    — {review.user ? review.user.username : 'Аноним'}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -203,6 +261,37 @@ export default function BookPage() {
               <p className="text-gray-500 italic">Пока нет отзывов на эту книгу.</p>
             )}
           </section>
+
+          {hasUserReview ? (
+            <p className="mt-4 text-green-600 font-semibold">
+                Вы уже оставили отзыв на эту книгу.
+            </p>
+            ) : (
+            <form onSubmit={handleReviewSubmit} className="mt-8">
+                <textarea
+                value={newReview.text}
+                onChange={(e) => setNewReview({ ...newReview, text: e.target.value })}
+                placeholder="Ваш отзыв"
+                required
+                className="w-full p-2 border border-gray-300 rounded"
+                />
+                <select
+                value={newReview.rating}
+                onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
+                className="mt-2 w-full p-2 border border-gray-300 rounded"
+                >
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+                <option value={4}>4</option>
+                <option value={5}>5</option>
+                </select>
+                <button type="submit" className="mt-2 px-4 py-2 bg-blue-600 text-white rounded">
+                Оставить отзыв
+                </button>
+            </form>
+            )}
+
         </section>
 
         <aside className="space-y-8">
