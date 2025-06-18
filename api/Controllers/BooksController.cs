@@ -35,6 +35,7 @@ namespace api.Controllers
             var book = await _context.Books
                 .Include(b => b.Genre)
                 .Include(b => b.Reviews)
+                    .ThenInclude(r => r.User)
                 .Include(b => b.FileAttachments)
                 .FirstOrDefaultAsync(b => b.Id == id);
 
