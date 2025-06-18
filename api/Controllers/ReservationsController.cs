@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using api.Data;
 using api.Models;
+using api.Dtos;
 
 namespace api.Controllers
 {
@@ -38,29 +39,42 @@ namespace api.Controllers
             return reservation == null ? NotFound() : reservation;
         }
 
+        // GET api/reservations/filter?userId=1&bookId=2
+        [HttpGet("filter")]
+        public async Task<ActionResult<IEnumerable<Reservation>>> GetReservations([FromQuery] int? userId, [FromQuery] int? bookId)
+        {
+            IQueryable<Reservation> query = _context.Reservations.Include(r => r.Book).Include(r => r.User);
+            if (userId.HasValue)
+                query = query.Where(r => r.UserId == userId.Value);
+            if (bookId.HasValue)
+                query = query.Where(r => r.BookId == bookId.Value);
+            var reservations = await query.ToListAsync();
+            return reservations;
+        }
+
         // POST: api/reservations
         [HttpPost]
-        public async Task<ActionResult<Reservation>> CreateReservation(Reservation reservation)
+        public async Task<ActionResult<Reservation>> CreateReservation(CreateReservationDto reservationDto)
         {
-            var book = await _context.Books.FindAsync(reservation.BookId);
+            var book = await _context.Books.FindAsync(reservationDto.BookId);
             if (book == null)
                 return NotFound("Книга не найдена");
-
             if (book.AvailableCopies <= 0)
                 return BadRequest("Нет доступных экземпляров книги");
-
             // Проверка ReturnBy > текущей даты
-            if (reservation.ReturnBy <= DateTime.UtcNow)
+            if (reservationDto.ReturnBy <= DateTime.UtcNow)
                 return BadRequest("Дата возврата должна быть позже текущей даты");
-
-            reservation.Status = "Reserved";
-            reservation.ReservedAt = DateTime.UtcNow;
-
+            var reservation = new Reservation
+            {
+                BookId = reservationDto.BookId,
+                UserId = reservationDto.UserId, // Замените на актуальный ID пользователя
+                ReturnBy = reservationDto.ReturnBy,
+                Status = "Reserved",
+                ReservedAt = DateTime.UtcNow
+            };
             book.AvailableCopies--;
-
             _context.Reservations.Add(reservation);
             await _context.SaveChangesAsync();
-
             return CreatedAtAction(nameof(GetReservation), new { id = reservation.Id }, reservation);
         }
 

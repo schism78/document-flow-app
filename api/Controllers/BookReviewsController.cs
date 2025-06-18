@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using api.Data;
 using api.Models;
+using api.Dtos;
 
 namespace api.Controllers
 {
@@ -58,16 +59,33 @@ namespace api.Controllers
         }
 
         // POST: api/bookreviews
-        [HttpPost]
-        public async Task<ActionResult<BookReview>> CreateBookReview(BookReview review)
-        {
-            review.CreatedAt = DateTime.UtcNow;
+           [HttpPost]
+            public async Task<ActionResult<BookReview>> CreateBookReview(BookReviewDto reviewDto)
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-            _context.BookReviews.Add(review);
-            await _context.SaveChangesAsync();
+                var review = new BookReview
+                {
+                    Text = reviewDto.Text,
+                    Rating = reviewDto.Rating,
+                    UserId = reviewDto.UserId,
+                    BookId = reviewDto.BookId,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-            return CreatedAtAction(nameof(GetBookReview), new { id = review.Id }, review);
-        }
+                _context.BookReviews.Add(review);
+                await _context.SaveChangesAsync();
+
+                // Загружаем пользователя и добавляем его в отзыв
+                var user = await _context.Users.FindAsync(reviewDto.UserId);
+                review.User = user;
+
+                return CreatedAtAction(nameof(GetBookReview), new { id = review.Id }, review);
+            }
+   
 
         // PUT: api/bookreviews/5
         [HttpPut("{id}")]
